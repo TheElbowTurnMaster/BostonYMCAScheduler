@@ -10,9 +10,6 @@ Date.prototype.addDays = function(days) {
 async function scrapeYMCA() {
     const times = ['12:30 pm','12:00 pm'];
 
-    function timeXPath(time) {
-        return '//span[text()="' + time + '"]';
-    }
     const url = 'https://outlook.office365.com/owa/calendar/HuntingtonFitnessCenter@ymcaboston.org/bookings/';
     const browser = await puppeteer.launch({headless : true});
     const page = await browser.newPage();
@@ -22,13 +19,14 @@ async function scrapeYMCA() {
     await page.click('[for = service_4]');
 
     var dateDay = (new Date()).addDays(3).getDate();    
+    let dateXPath = '//div[text()="' + dateDay + '"]';
     if(dateDay <= 3) {
         await page.waitForSelector('[class="image icon-chevronRight"]');
         await page.click('[class="image icon-chevronRight"]');
+        await page.waitForXPath(dateXPath);
     }
 
-    let xpath = '//div[text()="' + dateDay + '"]';
-    const [buttonDate] = await page.$x(xpath);
+    const [buttonDate] = await page.$x(dateXPath);
     if(buttonDate) {
         await buttonDate.click();
     }
