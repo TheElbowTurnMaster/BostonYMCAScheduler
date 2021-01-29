@@ -8,15 +8,19 @@ Date.prototype.addDays = function(days) {
 }
 
 async function scrapeYMCA() {
-    const times = ['12:30 pm','12:00 pm'];
+    const times = ['4:30 pm'];
 
     const url = 'https://outlook.office365.com/owa/calendar/HuntingtonFitnessCenter@ymcaboston.org/bookings/';
     const browser = await puppeteer.launch({headless : true});
     const page = await browser.newPage();
     await page.goto(url);
 
-    await page.waitForSelector('[for = service_4]');
-    await page.click('[for = service_4]');
+
+    await page.waitForXPath("//span[contains(text(),'Free Weights')]");
+    const [freeWeightButton] = await page.$x("//span[contains(text(),'Free Weights')]");
+    if(freeWeightButton) {
+        await freeWeightButton.click();
+    }
 
     var dateDay = (new Date()).addDays(3).getDate();    
     let dateXPath = '//div[text()="' + dateDay + '"]';
@@ -45,6 +49,7 @@ async function scrapeYMCA() {
     }
 
     await page.focus('[placeholder = Name]');
+    await page.waitForTimeout(100);
     await page.type('[placeholder = Name]', info.info.myName);
     await page.type('[placeholder = Email]', info.info.email);
     await page.type('[placeholder="Phone number"]', info.info.phoneNumber);
