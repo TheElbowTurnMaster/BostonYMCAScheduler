@@ -7,8 +7,24 @@ Date.prototype.addDays = function(days) {
     return date;
 }
 
-async function scrapeYMCA() {
-    const times = ['4:30 pm'];
+function toWrittenDay(day) {
+    let days = [ 
+        "sunday", 
+        "monday",
+        "tuesday", 
+        "wednesday", 
+        "thursday", 
+        "friday", 
+        "saturday"
+    ]
+
+    return days[day]
+}
+
+async function scrapeYMCA(dates) {
+    const workoutDate = (new Date()).addDays(3);
+    const workoutTime = dates[toWrittenDay(workoutDate.getDay())]
+    if(!workoutTime) return;
 
     const url = 'https://outlook.office365.com/owa/calendar/HuntingtonFitnessCenter@ymcaboston.org/bookings/';
     const browser = await puppeteer.launch({headless : true});
@@ -22,7 +38,7 @@ async function scrapeYMCA() {
         await freeWeightButton.click();
     }
 
-    var dateDay = (new Date()).addDays(3).getDate();    
+    const dateDay = workoutDate.getDate();
     let dateXPath = '//div[text()="' + dateDay + '"]';
     if(dateDay <= 3) {
         await page.waitForSelector('[class="image icon-chevronRight"]');
@@ -42,7 +58,7 @@ async function scrapeYMCA() {
     }, ...availableTimeElements);
 
     for(let i = 0; i < availableTimes.length; i++) {
-        if(times.includes(availableTimes[i])) {
+        if(availableTimes[i] == workoutTime) {
             availableTimeElements[i].click();
             break;
         }
@@ -61,4 +77,7 @@ async function scrapeYMCA() {
     browser.close();
 }
 
-scrapeYMCA();
+scrapeYMCA({
+    monday: "4:30 pm",
+    thursday: "12:30 pm"
+});
