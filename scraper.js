@@ -1,5 +1,5 @@
-const { myName, email, phoneNumber } = require('./personal-info.js');
 const { threeDaysFromToday, toWrittenDay } = require('./utils');
+require('dotenv').config();
 const puppeteer = require('puppeteer');
 
 async function scrapeYMCA(dates) {
@@ -50,9 +50,9 @@ async function scrapeYMCA(dates) {
 
     await page.focus('[placeholder = Name]');
     await page.waitForTimeout(100);
-    await page.type('[placeholder = Name]', myName);
-    await page.type('[placeholder = Email]', email);
-    await page.type('[placeholder="Phone number"]', phoneNumber);
+    await page.type('[placeholder = Name]', process.env.NAME);
+    await page.type('[placeholder = Email]', process.env.EMAIL);
+    await page.type('[placeholder="Phone number"]', process.env.PHONE_NUMBER);
 
     await page.select('#af1aa7f3-a272-4226-8ac9-815f58267c52', "Yes");
 
@@ -73,7 +73,7 @@ async function scrapeYMCA(dates) {
 }
 
 scrapeYMCA({
-    monday: "2:30 pm",
+    monday: "12:30 pm",
     thursday: "12:30 pm",
     saturday: "12:30 pm"
 }).then((result) => console.log(result));
