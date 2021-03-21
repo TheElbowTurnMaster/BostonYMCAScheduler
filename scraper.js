@@ -17,33 +17,23 @@ async function scrapeYMCA(dates) {
     const page = await browser.newPage();
     await page.goto(url);
 
-
-    await page.waitForXPath("//span[contains(text(),'Free Weights')]");
-    const [freeWeightButton] = await page.$x("//span[contains(text(),'Free Weights')]");
-    if(freeWeightButton) {
-        await freeWeightButton.click();
-    }
+    await clickXPath(page, "//span[contains(text(),'Free Weights')]");
 
     const dateDay = workoutDate.getDate();
     let dateXPath = '//div[text()="' + dateDay + '"]';
     if(dateDay <= 3) {
         await page.waitForSelector('[class="image icon-chevronRight"]');
         await page.click('[class="image icon-chevronRight"]');
-        await page.waitForXPath(dateXPath);
     }
-
-    const [buttonDate] = await page.$x(dateXPath);
-    if(buttonDate) {
-        await buttonDate.click();
-    }
+    await clickXPath(page, dateXPath);
 
     await page.waitForXPath('//div[@class="focusable timePicker"]/ul/li');
     let availableTimeElements = await page.$x('//div[@class="focusable timePicker"]/ul/li');
-    let availableTimes = await page.evaluate((...availableTimeElements) => {
-        return availableTimeElements.map(e => e.innerText);
-    }, ...availableTimeElements);
-
-    const timeSlot = await availableTimes.findIndex(time => time == workoutTime);
+    let timeSlot = await page.evaluate((workoutTime, ...availableTimeElements) => {
+        return availableTimeElements
+            .map(e => e.innerText)
+            .findIndex(time => time == workoutTime);
+    }, workoutTime, ...availableTimeElements);
     if(timeSlot != -1) {
         await availableTimeElements[timeSlot].click();
     }
@@ -72,8 +62,16 @@ async function scrapeYMCA(dates) {
     }
 }
 
-scrapeYMCA({
-    monday: "12:30 pm",
-    thursday: "12:30 pm",
-    saturday: "12:30 pm"
-}).then((result) => console.log(result));
+async function clickXPath(page, xpath) {
+    await page.waitForXPath(xpath);
+    const [button] = await page.$x(xpath);
+    if(button) {
+      await button.click();
+    }
+  }
+
+// scrapeYMCA({
+//     tuesday: "2:30 pm",
+//     thursday: "1:30 pm",
+//     saturday: "1:30 pm"
+// }).then((result) => console.log(result));
